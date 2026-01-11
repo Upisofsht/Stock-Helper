@@ -7,9 +7,13 @@ import pandas as pd
 import numpy as np
 
 # --- 版面設定 ---
-st.set_page_config(layout="wide", page_title="台股全方位操盤助手 (終極戰情版)")
+st.set_page_config(layout="wide", page_title="台股全方位操盤助手")
 
-st.title("🇹🇼 台股全方位操盤助手 (籌碼+技術雙刀流)")
+st.title("🇹🇼 台股全方位操盤助手")
+
+if st.button('🔄 刷新最新股價'):
+    st.cache_data.clear() # 清除快取，強制重抓
+    st.rerun() # 重新執行程式
 
 # --- 1. 台股分類資料庫 ---
 stock_categories = {
