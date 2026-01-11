@@ -198,4 +198,4 @@ with st.container(border=True):
     
     fig.update_layout(height=600, xaxis_rangeslider_visible=False, dragmode='pan', hovermode='x unified')
     fig.update_xaxes(rangebreaks=[dict(values=dt_breaks)])
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
