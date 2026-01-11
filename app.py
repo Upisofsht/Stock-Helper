@@ -14,7 +14,6 @@ TODAY = date.today().strftime("%Y-%m-%d")
 st.title("📈 全方位操盤助手 (戰情中心)")
 
 # --- 1. 股票分類資料庫 (巢狀字典) ---
-# 你可以在這裡自由新增你的自選股群組
 stock_categories = {
     "🇺🇸 美股科技巨頭": {
         "NVDA": "NVDA - 輝達 (AI霸主)",
@@ -59,7 +58,6 @@ stock_categories = {
 }
 
 # --- 側邊欄與選單邏輯 ---
-# 為了放兩個選單，我們可以調整一下比例，讓 col1 寬一點
 col1, col2, col3 = st.columns([1.2, 1, 1]) 
 
 with col1:
@@ -91,12 +89,13 @@ start_date_str = start_date.strftime("%Y-%m-%d")
 
 @st.cache_data
 def load_data(ticker, start):
-    # 注意：Yahoo Finance 有時盤中資料會有延遲，如果要最即時可能需要付費 API
+    # 下載資料
     data = yf.download(ticker, start, TODAY)
     data.reset_index(inplace=True)
     if isinstance(data.columns, pd.MultiIndex):
         data.columns = data.columns.get_level_values(0)
     
+    # 計算均線
     data['MA5'] = data['Close'].rolling(window=5).mean()
     data['MA10'] = data['Close'].rolling(window=10).mean()
     data['MA20'] = data['Close'].rolling(window=20).mean()
@@ -118,22 +117,18 @@ else:
     line_color_fast, line_color_slow = '#FFD700', '#FF8C00'
 
 # --- 核心：即時訊號判讀邏輯 ---
-last_row = data.iloc[-1]   # 今天 (或最新一筆)
+last_row = data.iloc[-1]   # 今天
 prev_row = data.iloc[-2]   # 昨天
 
-# 判斷今天狀態
 curr_fast = last_row[ma_fast_col]
 curr_slow = last_row[ma_slow_col]
-# 判斷昨天狀態
 prev_fast = prev_row[ma_fast_col]
 prev_slow = prev_row[ma_slow_col]
 
-# 定義狀態
 signal_status = "無動作"
 signal_color = "gray"
 signal_msg = "趨勢延續中..."
 
-# 1. 檢查是否發生交叉
 if prev_fast < prev_slow and curr_fast > curr_slow:
     signal_status = "🚀 黃金交叉 (買進)"
     signal_color = "green"
@@ -143,10 +138,9 @@ elif prev_fast > prev_slow and curr_fast < curr_slow:
     signal_color = "red"
     signal_msg = f"警告！{ma_fast_label} 剛剛向下跌破 {ma_slow_label}，建議獲利了結。"
 else:
-    # 2. 如果沒交叉，檢查現在是多頭還是空頭排列
     if curr_fast > curr_slow:
         signal_status = "📈 持股續抱 (多頭)"
-        signal_color = "green" # 淺綠
+        signal_color = "green"
         signal_msg = f"目前趨勢向上，{ma_fast_label} 在 {ma_slow_label} 之上。"
     else:
         signal_status = "🐻 空手觀望 (空頭)"
@@ -155,7 +149,7 @@ else:
 
 st.divider()
 
-# --- 戰情中心顯示區 (Highlight) ---
+# --- 戰情中心顯示區 ---
 st.subheader(f"📢 {stock_name} - 目前訊號狀態")
 
 if signal_color == "green":
@@ -172,7 +166,7 @@ st.metric(label=f"最新收盤價 ({last_row['Date'].strftime('%Y-%m-%d')})",
           value=f"{last_row['Close']:.2f}", 
           delta=f"{change:.2f} ({pct_change:.2f}%)")
 
-# --- 以下是圖表區 (保持不變) ---
+# --- 圖表區 ---
 with st.container(border=True):
     st.markdown(f"### 📊 技術分析圖表")
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.05, row_heights=[0.7, 0.3])
@@ -198,4 +192,6 @@ with st.container(border=True):
     
     fig.update_layout(height=600, xaxis_rangeslider_visible=False, dragmode='pan', hovermode='x unified')
     fig.update_xaxes(rangebreaks=[dict(values=dt_breaks)])
+    
+    # 這裡照你的要求修改為 width='stretch'
     st.plotly_chart(fig, width='stretch')
