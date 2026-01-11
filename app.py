@@ -13,30 +13,78 @@ TODAY = date.today().strftime("%Y-%m-%d")
 
 st.title("📈 全方位操盤助手 (戰情中心)")
 
-# --- 股票對照表 ---
-stock_map = {
-    "AAPL": "AAPL - 蘋果",
-    "GOOG": "GOOG - Google",
-    "MSFT": "MSFT - 微軟",
-    "NVDA": "NVDA - 輝達",
-    "TSLA": "TSLA - 特斯拉",
-    "2330.TW": "2330 - 台積電",
-    "2337.TW": "2337 - 旺宏",
-    "2454.TW": "2454 - 聯發科",
-    "2603.TW": "2603 - 長榮海運",
-    "2609.TW": "2609 - 陽明海運"
+# --- 1. 股票分類資料庫 (巢狀字典) ---
+# 你可以在這裡自由新增你的自選股群組
+stock_categories = {
+    "🇺🇸 美股科技巨頭": {
+        "NVDA": "NVDA - 輝達 (AI霸主)",
+        "AAPL": "AAPL - 蘋果",
+        "MSFT": "MSFT - 微軟",
+        "GOOG": "GOOG - Google",
+        "TSLA": "TSLA - 特斯拉",
+        "AMD":  "AMD - 超微",
+        "AVGO": "AVGO - 博通"
+    },
+    "🇹🇼 台積電與半導體供應鏈": {
+        "2330.TW": "2330 - 台積電 (晶圓代工)",
+        "2454.TW": "2454 - 聯發科 (IC設計)",
+        "2303.TW": "2303 - 聯電",
+        "3711.TW": "3711 - 日月光投控 (封測)",
+        "3443.TW": "3443 - 創意 (IP矽智財)",
+        "3661.TW": "3661 - 世芯-KY"
+    },
+    "💾 記憶體族群": {
+        "MU":      "MU - 美光 (美股)",
+        "2337.TW": "2337 - 旺宏 (Flash)",
+        "2344.TW": "2344 - 華邦電",
+        "2408.TW": "2408 - 南亞科 (DRAM)"
+    },
+    "⚡ 電源供應器廠": {
+        "2308.TW": "2308 - 台達電 (龍頭)",
+        "2301.TW": "2301 - 光寶科",
+        "6409.TW": "6409 - 旭隼 (UPS股王)"
+    },
+    "🚢 航運三雄": {
+        "2603.TW": "2603 - 長榮",
+        "2609.TW": "2609 - 陽明",
+        "2615.TW": "2615 - 萬海"
+    },
+    "🤖 AI 伺服器組裝": {
+        "2382.TW": "2382 - 廣達",
+        "3231.TW": "3231 - 緯創",
+        "2317.TW": "2317 - 鴻海",
+        "2356.TW": "2356 - 英業達"
+    }
 }
 
-# --- 側邊欄 ---
-col1, col2, col3 = st.columns([1, 1, 1])
+# --- 側邊欄與選單邏輯 ---
+# 為了放兩個選單，我們可以調整一下比例，讓 col1 寬一點
+col1, col2, col3 = st.columns([1.2, 1, 1]) 
+
 with col1:
-    selected_stock = st.selectbox("選擇股票", options=list(stock_map.keys()), format_func=lambda x: stock_map[x])
+    # 第一層：選擇族群
+    selected_category = st.selectbox("1️⃣ 選擇板塊/群組", list(stock_categories.keys()))
+    
+    # 根據選到的族群，抓出對應的股票清單
+    current_stock_list = stock_categories[selected_category]
+    
+    # 第二層：選擇股票
+    selected_stock = st.selectbox(
+        "2️⃣ 選擇股票", 
+        options=list(current_stock_list.keys()), 
+        format_func=lambda x: current_stock_list[x]
+    )
+
 with col2:
     lookback_years = st.slider("回顧歷史年數:", 1, 5, 1)
+
 with col3:
     strategy_mode = st.radio("選擇操作風格", ("短線衝浪 (MA5 + MA10)", "波段趨勢 (MA20 + MA60)"))
 
-stock_name = stock_map[selected_stock]
+# 取得股票中文名稱 (用於標題)
+stock_name = current_stock_list[selected_stock]
+
+# 計算日期
 start_date = pd.to_datetime(TODAY) - pd.DateOffset(years=lookback_years)
 start_date_str = start_date.strftime("%Y-%m-%d")
 
@@ -107,7 +155,7 @@ else:
 st.divider()
 
 # --- 戰情中心顯示區 (Highlight) ---
-st.subheader("📢 目前訊號狀態")
+st.subheader(f"📢 {stock_name} - 目前訊號狀態")
 
 if signal_color == "green":
     st.success(f"### {signal_status}\n{signal_msg}")
@@ -123,7 +171,7 @@ st.metric(label=f"最新收盤價 ({last_row['Date'].strftime('%Y-%m-%d')})",
           value=f"{last_row['Close']:.2f}", 
           delta=f"{change:.2f} ({pct_change:.2f}%)")
 
-# --- 以下是圖表區 (跟之前一樣) ---
+# --- 以下是圖表區 (保持不變) ---
 with st.container(border=True):
     st.markdown(f"### 📊 技術分析圖表")
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.05, row_heights=[0.7, 0.3])
@@ -149,4 +197,4 @@ with st.container(border=True):
     
     fig.update_layout(height=600, xaxis_rangeslider_visible=False, dragmode='pan', hovermode='x unified')
     fig.update_xaxes(rangebreaks=[dict(values=dt_breaks)])
-    st.plotly_chart(fig, width='stretch')
+    st.plotly_chart(fig, use_container_width=True)
