@@ -34,14 +34,14 @@ with st.sidebar:
     
     st.divider()
     st.subheader("🛡️ 風控參數")
-    stop_loss_pct = st.slider("停損(%)", 3, 15, 8, step=1)
-    take_profit_pct = st.slider("停利(%)", 5, 30, 15, step=5)
+    stop_loss_pct = st.slider("停損(%)", 3, 20, 8, step=1)
+    take_profit_pct = st.slider("停利(%)", 5, 50, 15, step=5)
     
     st.divider()
     st.subheader("📊 策略權重")
-    weight_trend = st.slider("趨勢權重", 0, 100, 40, step=10)
-    weight_kd = st.slider("KD權重", 0, 100, 30, step=10)
-    weight_macd = st.slider("MACD權重", 0, 100, 30, step=10)
+    weight_trend = st.slider("趨勢權重", 0, 100, 60, step=5)
+    weight_kd = st.slider("KD權重", 0, 100, 15, step=5)
+    weight_macd = st.slider("MACD權重", 0, 100, 25, step=5)
 
 # --- 3. 資料抓取 ---
 @st.cache_data(ttl=3600, show_spinner=False)
