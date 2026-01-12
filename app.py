@@ -44,7 +44,7 @@ with st.sidebar:
     weight_macd = st.slider("MACD權重", 0, 100, 30, step=10)
 
 # --- 3. 資料抓取 ---
-@st.cache_data(ttl=43200, show_spinner=False)
+@st.cache_data(ttl=3600, show_spinner=False)
 def load_data_finmind(ticker, years):
     try:
         dl = DataLoader()
