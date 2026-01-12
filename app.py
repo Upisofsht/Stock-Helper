@@ -48,7 +48,7 @@ with st.sidebar:
 def load_data_finmind(ticker, years):
     try:
         dl = DataLoader()
-        dl.login(token="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRlIjoiMjAyNi0wMS0xMiAyMzo0Njo0OCIsInVzZXJfaWQiOiJib3RtdG9kIiwiZW1haWwiOiJiMTAyOTAxNmRzdXNlQGdtYWlsLmNvbSIsImlwIjoiNTkuMTI1LjE4Ni4xMjYifQ.kgYyu7trkC8L0WfRnqZLm9ywWMgjIRXKxnB6HTuvGE8")
+        dl.login_by_token(api_token="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRlIjoiMjAyNi0wMS0xMiAyMzo0Njo0OCIsInVzZXJfaWQiOiJib3RtdG9kIiwiZW1haWwiOiJiMTAyOTAxNmRzdXNlQGdtYWlsLmNvbSIsImlwIjoiNTkuMTI1LjE4Ni4xMjYifQ.kgYyu7trkC8L0WfRnqZLm9ywWMgjIRXKxnB6HTuvGE8")
         end_date = date.today().strftime("%Y-%m-%d")
         start_date = (date.today() - timedelta(days=int(years*365 + 100))).strftime("%Y-%m-%d") # 多抓100天供均線運算
         
