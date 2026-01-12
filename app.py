@@ -10,10 +10,6 @@ import numpy as np
 st.set_page_config(layout="wide", page_title="台股戰情室 Pro", initial_sidebar_state="collapsed")
 st.title("🇹🇼 台股戰情室 (進階策略回測版)")
 
-if st.button('🔄 刷新最新股價 (盤中監控)'):
-    st.cache_data.clear() # 清除快取，強制重抓
-    st.rerun() # 重新執行程式
-
 # --- 2. 側邊欄設定 ---
 with st.sidebar:
     st.header("⚙️ 設定面板")
