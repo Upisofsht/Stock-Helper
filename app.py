@@ -17,13 +17,13 @@ nav_col1, nav_col2, nav_col3, nav_col4 = st.columns(4)
 
 # 注意：st.page_link 的路徑必須相對於你的主程式，且目標檔案必須存在
 with nav_col1:
-    st.page_link("pages/sector.py", label="板塊資金雷達", icon="🎯", use_container_width=True)
+    st.page_link("pages/sector.py", label="板塊資金雷達", icon="🎯", width='stretch')
 with nav_col2:
-    st.page_link("pages/rotation.py", label="板塊輪動分析", icon="🔄", use_container_width=True)
+    st.page_link("pages/rotation.py", label="板塊輪動分析", icon="🔄", width='stretch')
 with nav_col3:
-    st.page_link("pages/ai_picker.py", label="AI 選股", icon="🤖", use_container_width=True)
+    st.page_link("pages/ai_picker.py", label="AI 選股", icon="🤖", width='stretch')
 with nav_col4:
-    st.page_link("pages/chart.py", label="板塊線圖", icon="📈", use_container_width=True)
+    st.page_link("pages/chart.py", label="板塊線圖", icon="📈", width='stretch')
 
 st.divider()
 
@@ -32,10 +32,10 @@ with st.sidebar:
     st.header("📌 頁面導航")
     
     # 側邊欄導航同樣改用 st.page_link
-    st.page_link("pages/sector.py", label="資金雷達", icon="🎯", use_container_width=True)
-    st.page_link("pages/rotation.py", label="輪動分析", icon="🔄", use_container_width=True)
-    st.page_link("pages/ai_picker.py", label="AI選股", icon="🤖", use_container_width=True)
-    st.page_link("pages/chart.py", label="板塊線圖", icon="📈", use_container_width=True)
+    st.page_link("pages/sector.py", label="資金雷達", icon="🎯", width='stretch')
+    st.page_link("pages/rotation.py", label="輪動分析", icon="🔄", width='stretch')
+    st.page_link("pages/ai_picker.py", label="AI選股", icon="🤖", width='stretch')
+    st.page_link("pages/chart.py", label="板塊線圖", icon="📈", width='stretch')
     
     st.divider()
     st.header("⚙️ 設定面板")
