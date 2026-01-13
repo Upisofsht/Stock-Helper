@@ -12,15 +12,20 @@ st.set_page_config(layout="wide", page_title="台股自用戰略看盤程式", i
 st.title("🇹🇼 台股自用戰略看盤程式 (進階策略回測版)")
 
 # --- 導航按鈕 ---
-col_nav1, col_nav2, col_nav3, col_nav4, col_nav5 = st.columns([1, 1, 1, 1, 2])
+st.markdown("**📌 快速導航：**")
+col_nav1, col_nav2, col_nav3, col_nav4 = st.columns(4)
 with col_nav1:
-    st.page_link("pages/sector.py", label="🎯 板塊資金雷達", icon="🎯")
+    if st.button("🎯 板塊資金雷達", key="nav_sector"):
+        st.switch_page("pages/sector.py")
 with col_nav2:
-    st.page_link("pages/rotation.py", label="🔄 板塊輪動分析", icon="🔄")
+    if st.button("🔄 板塊輪動分析", key="nav_rotation"):
+        st.switch_page("pages/rotation.py")
 with col_nav3:
-    st.page_link("pages/ai_picker.py", label="🤖 AI 選股", icon="🤖")
+    if st.button("🤖 AI 選股", key="nav_ai"):
+        st.switch_page("pages/ai_picker.py")
 with col_nav4:
-    st.page_link("pages/chart.py", label="📈 板塊線圖", icon="📈")
+    if st.button("📈 板塊線圖", key="nav_chart"):
+        st.switch_page("pages/chart.py")
 
 # --- 2. 側邊欄設定 ---
 with st.sidebar:
