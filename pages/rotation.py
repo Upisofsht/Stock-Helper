@@ -415,7 +415,7 @@ with tab2:
     st.divider()
     
     # 建立資金流向矩陣 (外資 vs 投信)
-    heatmap_data = sector_scores[['sector', 'foreign', 'trust']].copy()
+    heatmap_data = sector_scores[['sector', 'foreign', 'trust', 'score']].copy()
     heatmap_data['foreign_norm'] = (heatmap_data['foreign'] - heatmap_data['foreign'].min()) / (heatmap_data['foreign'].max() - heatmap_data['foreign'].min()) * 100
     heatmap_data['trust_norm'] = (heatmap_data['trust'] - heatmap_data['trust'].min()) / (heatmap_data['trust'].max() - heatmap_data['trust'].min()) * 100
     
