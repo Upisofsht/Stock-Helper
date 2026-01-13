@@ -10,3 +10,6 @@ wheels/
 .venv
 pyproject.toml
 uv.lock
+
+stocknote/
+.streamlit/secrets.toml
