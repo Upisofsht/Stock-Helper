@@ -21,12 +21,8 @@ from config import stock_categories, FINMIND_API_TOKEN
 import time
 
 # --- 頁面設定 ---
-st.set_page_config(layout="wide", page_title="AI 智能選股", initial_sidebar_state="collapsed")
+st.set_page_config(layout="wide", page_title="AI 智能選股")
 st.title("🤖 AI 智能選股 - 板塊 × 個股雙重評分")
-
-# 返回首頁按鈕
-if st.button("⬅️ 返回首頁", key="back_home"):
-    st.switch_page("app.py")
 
 # --- 側邊欄設定 ---
 with st.sidebar:

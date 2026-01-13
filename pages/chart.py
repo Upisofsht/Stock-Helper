@@ -8,12 +8,8 @@ import numpy as np
 from config import stock_categories, FINMIND_API_TOKEN
 
 # --- 頁面設定 ---
-st.set_page_config(layout="wide", page_title="板塊指數線圖", initial_sidebar_state="collapsed")
+st.set_page_config(layout="wide", page_title="板塊指數線圖")
 st.title("📈 板塊指數技術線圖")
-
-# 返回首頁按鈕
-if st.button("⬅️ 返回首頁", key="back_home"):
-    st.switch_page("app.py")
 
 # --- 側邊欄設定 ---
 with st.sidebar:

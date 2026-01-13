@@ -11,21 +11,19 @@ from config import stock_categories, FINMIND_API_TOKEN
 st.set_page_config(layout="wide", page_title="台股自用戰略看盤程式", initial_sidebar_state="collapsed")
 st.title("🇹🇼 台股自用戰略看盤程式 (進階策略回測版)")
 
-# --- 導航按鈕 ---
-st.markdown("**📌 快速導航：**")
-col_nav1, col_nav2, col_nav3, col_nav4 = st.columns(4)
-with col_nav1:
-    if st.button("🎯 板塊資金雷達", key="nav_sector"):
-        st.switch_page("pages/sector.py")
-with col_nav2:
-    if st.button("🔄 板塊輪動分析", key="nav_rotation"):
-        st.switch_page("pages/rotation.py")
-with col_nav3:
-    if st.button("🤖 AI 選股", key="nav_ai"):
-        st.switch_page("pages/ai_picker.py")
-with col_nav4:
-    if st.button("📈 板塊線圖", key="nav_chart"):
-        st.switch_page("pages/chart.py")
+# --- 導航說明 ---
+st.info("💡 請使用左側邊欄切換頁面，或點擊下方連結：")
+
+# 顯示頁面連結（使用 Streamlit 自動生成的導航）
+st.markdown("""
+### 📌 可用功能頁面：
+- **🎯 板塊資金雷達** (`sector.py`) - 深度分析單一板塊的資金流向
+- **🔄 板塊輪動分析** (`rotation.py`) - 全市場板塊對比與輪動分析  
+- **🤖 AI 選股** (`ai_picker.py`) - 智能推薦標的（板塊×個股雙重評分）
+- **📈 板塊線圖** (`chart.py`) - 板塊指數技術線圖分析
+
+👈 請使用左側邊欄的頁面導航切換功能
+""")
 
 # --- 2. 側邊欄設定 ---
 with st.sidebar:
