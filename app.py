@@ -11,46 +11,31 @@ from config import stock_categories, FINMIND_API_TOKEN
 st.set_page_config(layout="wide", page_title="台股自用戰略看盤程式", initial_sidebar_state="expanded")
 st.title("🇹🇼 台股自用戰略看盤程式 (進階策略回測版)")
 
-# --- 快速導航按鈕 ---
+# --- 快速導航按鈕 (使用 st.page_link 取代 button) ---
 st.markdown("**📌 快速導航：**")
 nav_col1, nav_col2, nav_col3, nav_col4 = st.columns(4)
 
-def safe_switch_page(page_path):
-    """安全切換頁面，失敗時顯示提示"""
-    try:
-        st.switch_page(page_path)
-    except Exception as e:
-        st.error(f"無法切換到 {page_path}，請使用左側邊欄的頁面導航")
-
+# 注意：st.page_link 的路徑必須相對於你的主程式，且目標檔案必須存在
 with nav_col1:
-    if st.button("🎯 板塊資金雷達", key="nav_sector", use_container_width=True):
-        safe_switch_page("pages/sector.py")
+    st.page_link("pages/sector.py", label="板塊資金雷達", icon="🎯", use_container_width=True)
 with nav_col2:
-    if st.button("🔄 板塊輪動分析", key="nav_rotation", use_container_width=True):
-        safe_switch_page("pages/rotation.py")
+    st.page_link("pages/rotation.py", label="板塊輪動分析", icon="🔄", use_container_width=True)
 with nav_col3:
-    if st.button("🤖 AI 選股", key="nav_ai", use_container_width=True):
-        safe_switch_page("pages/ai_picker.py")
+    st.page_link("pages/ai_picker.py", label="AI 選股", icon="🤖", use_container_width=True)
 with nav_col4:
-    if st.button("📈 板塊線圖", key="nav_chart", use_container_width=True):
-        safe_switch_page("pages/chart.py")
+    st.page_link("pages/chart.py", label="板塊線圖", icon="📈", use_container_width=True)
 
 st.divider()
 
 # --- 2. 側邊欄設定 ---
 with st.sidebar:
     st.header("📌 頁面導航")
-    nav_sidebar_col1, nav_sidebar_col2 = st.columns(2)
-    with nav_sidebar_col1:
-        if st.button("🎯 資金雷達", key="sb_nav_sector", use_container_width=True):
-            safe_switch_page("pages/sector.py")
-        if st.button("🔄 輪動分析", key="sb_nav_rotation", use_container_width=True):
-            safe_switch_page("pages/rotation.py")
-    with nav_sidebar_col2:
-        if st.button("🤖 AI選股", key="sb_nav_ai", use_container_width=True):
-            safe_switch_page("pages/ai_picker.py")
-        if st.button("📈 板塊線圖", key="sb_nav_chart", use_container_width=True):
-            safe_switch_page("pages/chart.py")
+    
+    # 側邊欄導航同樣改用 st.page_link
+    st.page_link("pages/sector.py", label="資金雷達", icon="🎯", use_container_width=True)
+    st.page_link("pages/rotation.py", label="輪動分析", icon="🔄", use_container_width=True)
+    st.page_link("pages/ai_picker.py", label="AI選股", icon="🤖", use_container_width=True)
+    st.page_link("pages/chart.py", label="板塊線圖", icon="📈", use_container_width=True)
     
     st.divider()
     st.header("⚙️ 設定面板")
@@ -76,16 +61,20 @@ with st.sidebar:
     weight_kd = st.slider("KD權重", 0, 100, 15, step=5)
     weight_macd = st.slider("MACD權重", 0, 100, 25, step=5)
 
-# --- 3. 資料抓取 ---
+# --- 3. 資料抓取 (以下程式碼保持不變) ---
+# ... (後面所有 load_data_finmind, calculate_indicators 等邏輯都不用動) ...
+# ...
+# ...
+# ... (請將原本程式碼的剩餘部分貼在下方)
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_data_finmind(ticker, years):
+    # (這部分與你原本的程式碼完全相同，無需修改)
     try:
         dl = DataLoader()
         dl.login_by_token(api_token=FINMIND_API_TOKEN)
         end_date = date.today().strftime("%Y-%m-%d")
-        start_date = (date.today() - timedelta(days=int(years*365 + 100))).strftime("%Y-%m-%d") # 多抓100天供均線運算
+        start_date = (date.today() - timedelta(days=int(years*365 + 100))).strftime("%Y-%m-%d")
         
-        # 股價
         df = dl.taiwan_stock_daily(stock_id=ticker, start_date=start_date, end_date=end_date)
         if df.empty: return pd.DataFrame()
 
@@ -94,7 +83,6 @@ def load_data_finmind(ticker, years):
         df[['Open', 'High', 'Low', 'Close', 'Volume']] = df[['Open', 'High', 'Low', 'Close', 'Volume']].astype(float)
         df['Date'] = pd.to_datetime(df['Date'])
         
-        # 籌碼 (加入例外處理，以免 FinMind 沒回傳籌碼導致崩潰)
         try:
             chips = dl.taiwan_stock_institutional_investors(stock_id=ticker, start_date=start_date, end_date=end_date)
             if not chips.empty:
@@ -110,22 +98,18 @@ def load_data_finmind(ticker, years):
         except:
             df['Foreign_Investor'] = 0; df['Investment_Trust'] = 0
         
-        # 計算技術指標
         df = calculate_indicators(df)
         return df.dropna().reset_index(drop=True)
     except Exception as e:
         return pd.DataFrame()
 
 def calculate_indicators(df):
-    """計算所有技術指標"""
-    # 均線
     df['MA5'] = df['Close'].rolling(5).mean()
     df['MA10'] = df['Close'].rolling(10).mean()
     df['MA20'] = df['Close'].rolling(20).mean()
     df['MA60'] = df['Close'].rolling(60).mean()
-    df['MA120'] = df['Close'].rolling(120).mean()  # 趨勢濾網用
+    df['MA120'] = df['Close'].rolling(120).mean()
     
-    # KD 指標
     df['9_High'] = df['High'].rolling(9).max()
     df['9_Low'] = df['Low'].rolling(9).min()
     df['RSV'] = (df['Close'] - df['9_Low']) / (df['9_High'] - df['9_Low']) * 100
@@ -140,7 +124,6 @@ def calculate_indicators(df):
         d_list.append(d)
     df['K'], df['D'] = k_list, d_list
     
-    # MACD
     exp1 = df['Close'].ewm(span=12, adjust=False).mean()
     exp2 = df['Close'].ewm(span=26, adjust=False).mean()
     df['DIF'] = exp1 - exp2
@@ -150,30 +133,26 @@ def calculate_indicators(df):
     return df
 
 def calculate_strategy_score(row, prev_row, mode, w_trend, w_kd, w_macd):
-    """策略評分制：0-100分"""
     score = 0
     details = []
     
-    # 選擇均線參數
     if mode == "短線 (MA5/10)":
         fast, slow, trend = 'MA5', 'MA10', 'MA60'
     else:
         fast, slow, trend = 'MA20', 'MA60', 'MA120'
     
-    # 1️⃣ 趨勢濾網 (Trend Filter)
     trend_score = 0
     if pd.notna(row[trend]) and pd.notna(row['Close']):
         if row['Close'] > row[trend]:
             trend_score = 100
             details.append(f"✅ 多頭趨勢 (價>{trend})")
-        elif row['Close'] > row[trend] * 0.97:  # 接近趨勢線
+        elif row['Close'] > row[trend] * 0.97:
             trend_score = 50
             details.append(f"⚠️ 接近趨勢線")
         else:
             trend_score = 0
             details.append(f"❌ 空頭趨勢 (價<{trend})")
     
-    # 2️⃣ KD 進場時機
     kd_score = 0
     k_val = row['K']
     if k_val < 20:
@@ -192,25 +171,23 @@ def calculate_strategy_score(row, prev_row, mode, w_trend, w_kd, w_macd):
         kd_score = 0
         details.append(f"🔴 KD過熱 ({k_val:.0f})")
     
-    # 3️⃣ MACD 動能
     macd_score = 0
     macd_val = row['MACD_Hist']
     prev_macd = prev_row['MACD_Hist'] if prev_row is not None else 0
     
-    if macd_val > 0 and prev_macd <= 0:  # 柱狀圖翻正
+    if macd_val > 0 and prev_macd <= 0:
         macd_score = 100
         details.append("🚀 MACD翻多")
     elif macd_val > 0:
         macd_score = 70
         details.append("📈 MACD偏多")
-    elif macd_val > prev_macd:  # 負值但收斂
+    elif macd_val > prev_macd:
         macd_score = 50
         details.append("🔄 MACD收斂中")
     else:
         macd_score = 20
         details.append("📉 MACD偏空")
     
-    # 加權計算總分
     total_weight = w_trend + w_kd + w_macd
     if total_weight > 0:
         score = (trend_score * w_trend + kd_score * w_kd + macd_score * w_macd) / total_weight
@@ -218,7 +195,6 @@ def calculate_strategy_score(row, prev_row, mode, w_trend, w_kd, w_macd):
     return score, details
 
 def run_backtest(df, mode, stop_loss, take_profit, w_trend, w_kd, w_macd):
-    """執行回測"""
     if mode == "短線 (MA5/10)":
         fast, slow = 'MA5', 'MA10'
     else:
@@ -231,12 +207,9 @@ def run_backtest(df, mode, stop_loss, take_profit, w_trend, w_kd, w_macd):
         row = df.iloc[i]
         prev_row = df.iloc[i-1]
         
-        # 計算當前評分
         score, details = calculate_strategy_score(row, prev_row, mode, w_trend, w_kd, w_macd)
         
-        # 如果沒有持倉
         if position is None:
-            # 買入條件：評分 >= 70 且 MA黃金交叉
             if score >= 70 and prev_row[fast] < prev_row[slow] and row[fast] > row[slow]:
                 position = {
                     'entry_date': row['Date'],
@@ -246,30 +219,24 @@ def run_backtest(df, mode, stop_loss, take_profit, w_trend, w_kd, w_macd):
                     'take_profit': row['Close'] * (1 + take_profit/100)
                 }
         
-        # 如果有持倉，檢查出場條件
         elif position is not None:
             exit_reason = None
             exit_price = row['Close']
             
-            # 1. 停損 (使用 Low 來判斷是否觸價)
             if row['Low'] <= position['stop_loss']:
                 exit_reason = '停損'
-                exit_price = position['stop_loss'] # 假設停損價成交
+                exit_price = position['stop_loss']
             
-            # 2. 停利 (使用 High 來判斷是否觸價)
             elif row['High'] >= position['take_profit']:
                 exit_reason = '停利'
-                exit_price = position['take_profit'] # 假設停利價成交
+                exit_price = position['take_profit']
             
-            # 3. 趨勢反轉：評分掉到30以下
             elif score < 30:
                 exit_reason = '趨勢轉弱'
             
-            # 4. MA死亡交叉
             elif prev_row[fast] > prev_row[slow] and row[fast] < row[slow]:
                 exit_reason = 'MA死叉'
             
-            # 記錄交易
             if exit_reason:
                 pnl = (exit_price - position['entry_price']) / position['entry_price'] * 100
                 trades.append({
@@ -283,7 +250,6 @@ def run_backtest(df, mode, stop_loss, take_profit, w_trend, w_kd, w_macd):
                 })
                 position = None
     
-    # 如果還有持倉，以最後價格結算
     if position is not None:
         last_row = df.iloc[-1]
         pnl = (last_row['Close'] - position['entry_price']) / position['entry_price'] * 100
@@ -299,33 +265,28 @@ def run_backtest(df, mode, stop_loss, take_profit, w_trend, w_kd, w_macd):
     
     return trades
 
-# --- 主程式區塊 ---
 with st.spinner('🚀 正在連線交易所...'):
     data = load_data_finmind(sel_stock, lookback_years)
 
 if data.empty:
     st.error(f"❌ 無法取得 {sel_stock_list[sel_stock]} 的資料，可能是代號錯誤或交易所連線中斷。")
 else:
-    # --- 4. 當前訊號分析 ---
     last = data.iloc[-1]
     prev = data.iloc[-2]
     chg = last['Close'] - prev['Close']
     pct = chg / prev['Close'] * 100
 
-    # 計算當前評分
     current_score, score_details = calculate_strategy_score(
         last, prev, strategy_mode, 
         weight_trend, weight_kd, weight_macd
     )
 
-    # 顯示當前狀態
     c1, c2, c3 = st.columns([1.2, 1.5, 1.3])
 
     with c1:
         st.metric("最新價", f"{last['Close']:.1f}", f"{chg:.1f} ({pct:.1f}%)")
 
     with c2:
-        # 評分顯示
         if current_score >= 70:
             st.success(f"### 🎯 策略評分: {current_score:.0f}/100")
             st.write("**強力買進訊號**")
@@ -341,12 +302,10 @@ else:
         for detail in score_details:
             st.write(detail)
 
-    # --- 5. 執行回測 ---
     with st.spinner('📊 執行回測分析...'):
         trades = run_backtest(data, strategy_mode, stop_loss_pct, take_profit_pct,
                              weight_trend, weight_kd, weight_macd)
 
-    # 計算績效
     if trades:
         trades_df = pd.DataFrame(trades)
         win_trades = trades_df[trades_df['pnl_pct'] > 0]
@@ -357,13 +316,11 @@ else:
         avg_win = win_trades['pnl_pct'].mean() if len(win_trades) > 0 else 0
         avg_loss = loss_trades['pnl_pct'].mean() if len(loss_trades) > 0 else 0
         
-        # 處理 loss 為 0 的除法錯誤
         if len(loss_trades) > 0 and loss_trades['pnl_pct'].sum() != 0:
             profit_factor = abs(win_trades['pnl_pct'].sum() / loss_trades['pnl_pct'].sum())
         else:
             profit_factor = float('inf')
         
-        # 績效儀表板
         st.divider()
         st.subheader("📈 回測績效總覽")
         
@@ -375,11 +332,9 @@ else:
         col4.metric("平均獲利", f"{avg_win:.1f}%")
         col5.metric("平均虧損", f"{avg_loss:.1f}%")
 
-    # --- 6. 分頁內容 ---
     tab1, tab2, tab3 = st.tabs(["📊 技術線圖", "💰 回測明細", "🏢 體質與籌碼"])
 
     with tab1:
-        # 繪製圖表
         if strategy_mode == "短線 (MA5/10)":
             fast, slow = 'MA5', 'MA10'
         else:
@@ -390,23 +345,19 @@ else:
                             row_heights=[0.5, 0.15, 0.15, 0.2],
                             subplot_titles=("價量與交易訊號", "成交量", "法人籌碼", "KD & MACD"))
         
-        # K線
         fig.add_trace(go.Candlestick(
             x=data['Date'], open=data['Open'], high=data['High'], 
             low=data['Low'], close=data['Close'],
             increasing_line_color='#ef5350', decreasing_line_color='#26a69a',
             name="K線"), row=1, col=1)
         
-        # 均線
         fig.add_trace(go.Scatter(x=data['Date'], y=data[fast], 
                                 line=dict(color='orange', width=1.5), name=fast), row=1, col=1)
         fig.add_trace(go.Scatter(x=data['Date'], y=data[slow], 
                                 line=dict(color='purple', width=1.5), name=slow), row=1, col=1)
         
-        # 標註交易點
         if trades:
             for trade in trades:
-                # 買點
                 fig.add_trace(go.Scatter(
                     x=[trade['entry_date']], y=[trade['entry_price']*0.98],
                     mode='markers+text',
@@ -414,7 +365,6 @@ else:
                     text=['買'], textposition='bottom center',
                     showlegend=False), row=1, col=1)
                 
-                # 賣點
                 color = 'green' if trade['pnl_pct'] > 0 else 'black'
                 fig.add_trace(go.Scatter(
                     x=[trade['exit_date']], y=[trade['exit_price']*1.02],
@@ -423,18 +373,15 @@ else:
                     text=[f"{trade['pnl_pct']:.1f}%"], textposition='top center',
                     showlegend=False), row=1, col=1)
         
-        # 成交量
         colors_vol = ['#ef5350' if o < c else '#26a69a' for o, c in zip(data['Open'], data['Close'])]
         fig.add_trace(go.Bar(x=data['Date'], y=data['Volume'], 
                             marker_color=colors_vol, name="量"), row=2, col=1)
         
-        # 籌碼
         fig.add_trace(go.Bar(x=data['Date'], y=data['Foreign_Investor'], 
                             marker_color='blue', name="外資"), row=3, col=1)
         fig.add_trace(go.Bar(x=data['Date'], y=data['Investment_Trust'], 
                             marker_color='orange', name="投信"), row=3, col=1)
         
-        # KD & MACD
         fig.add_trace(go.Scatter(x=data['Date'], y=data['K'], 
                                 line=dict(color='orange', width=1), name="K"), row=4, col=1)
         fig.add_trace(go.Scatter(x=data['Date'], y=data['D'], 
@@ -446,7 +393,6 @@ else:
         fig.update_layout(height=900, margin=dict(l=10, r=10, t=30, b=10),
                          xaxis_rangeslider_visible=False, showlegend=False)
         
-        # 移除週末空白
         dt_all = pd.date_range(start=data['Date'].iloc[0], end=data['Date'].iloc[-1])
         dt_breaks = [d.strftime("%Y-%m-%d") for d in dt_all 
                     if d.strftime("%Y-%m-%d") not in data['Date'].dt.strftime("%Y-%m-%d").tolist()]
@@ -458,7 +404,6 @@ else:
         if trades:
             st.subheader("💰 歷史交易明細")
             
-            # 轉換為DataFrame並格式化
             display_df = trades_df.copy()
             display_df['entry_date'] = display_df['entry_date'].dt.strftime('%Y-%m-%d')
             display_df['exit_date'] = display_df['exit_date'].dt.strftime('%Y-%m-%d')
@@ -470,7 +415,6 @@ else:
             
             st.dataframe(display_df, width='stretch')
             
-            # 策略分析
             st.divider()
             st.subheader("📊 策略分析")
             
@@ -508,5 +452,3 @@ else:
                "• **趨勢濾網**: 確保在主要趨勢方向交易 (MA60/MA120)\n"
                "• **KD時機**: 專注低檔轉折，避免追高\n"
                "• **風控機制**: 嚴格執行停損停利 (Stop Loss / Take Profit)")
-
-st.divider()
