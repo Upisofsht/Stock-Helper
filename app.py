@@ -8,25 +8,51 @@ import numpy as np
 from config import stock_categories, FINMIND_API_TOKEN
 
 # --- 1. 頁面設定 ---
-st.set_page_config(layout="wide", page_title="台股自用戰略看盤程式", initial_sidebar_state="collapsed")
+st.set_page_config(layout="wide", page_title="台股自用戰略看盤程式", initial_sidebar_state="expanded")
 st.title("🇹🇼 台股自用戰略看盤程式 (進階策略回測版)")
 
-# --- 導航說明 ---
-st.info("💡 請使用左側邊欄切換頁面，或點擊下方連結：")
+# --- 快速導航按鈕 ---
+st.markdown("**📌 快速導航：**")
+nav_col1, nav_col2, nav_col3, nav_col4 = st.columns(4)
 
-# 顯示頁面連結（使用 Streamlit 自動生成的導航）
-st.markdown("""
-### 📌 可用功能頁面：
-- **🎯 板塊資金雷達** (`sector.py`) - 深度分析單一板塊的資金流向
-- **🔄 板塊輪動分析** (`rotation.py`) - 全市場板塊對比與輪動分析  
-- **🤖 AI 選股** (`ai_picker.py`) - 智能推薦標的（板塊×個股雙重評分）
-- **📈 板塊線圖** (`chart.py`) - 板塊指數技術線圖分析
+def safe_switch_page(page_path):
+    """安全切換頁面，失敗時顯示提示"""
+    try:
+        st.switch_page(page_path)
+    except Exception as e:
+        st.error(f"無法切換到 {page_path}，請使用左側邊欄的頁面導航")
 
-👈 請使用左側邊欄的頁面導航切換功能
-""")
+with nav_col1:
+    if st.button("🎯 板塊資金雷達", key="nav_sector", use_container_width=True):
+        safe_switch_page("pages/sector.py")
+with nav_col2:
+    if st.button("🔄 板塊輪動分析", key="nav_rotation", use_container_width=True):
+        safe_switch_page("pages/rotation.py")
+with nav_col3:
+    if st.button("🤖 AI 選股", key="nav_ai", use_container_width=True):
+        safe_switch_page("pages/ai_picker.py")
+with nav_col4:
+    if st.button("📈 板塊線圖", key="nav_chart", use_container_width=True):
+        safe_switch_page("pages/chart.py")
+
+st.divider()
 
 # --- 2. 側邊欄設定 ---
 with st.sidebar:
+    st.header("📌 頁面導航")
+    nav_sidebar_col1, nav_sidebar_col2 = st.columns(2)
+    with nav_sidebar_col1:
+        if st.button("🎯 資金雷達", key="sb_nav_sector", use_container_width=True):
+            safe_switch_page("pages/sector.py")
+        if st.button("🔄 輪動分析", key="sb_nav_rotation", use_container_width=True):
+            safe_switch_page("pages/rotation.py")
+    with nav_sidebar_col2:
+        if st.button("🤖 AI選股", key="sb_nav_ai", use_container_width=True):
+            safe_switch_page("pages/ai_picker.py")
+        if st.button("📈 板塊線圖", key="sb_nav_chart", use_container_width=True):
+            safe_switch_page("pages/chart.py")
+    
+    st.divider()
     st.header("⚙️ 設定面板")
     
     sel_cat = st.selectbox("板塊", list(stock_categories.keys()))
